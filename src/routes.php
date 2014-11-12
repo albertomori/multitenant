@@ -1,3 +1,6 @@
 <?php
  
-Route::controller('tenant/', 'TenantController');
+Route::controller('tenant/', 'TenantController', [
+	'getChose' => 'multitenant.chose',
+	'getApply' => 'multitenant.apply',
+]);

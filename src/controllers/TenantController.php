@@ -37,21 +37,26 @@ class TenantController extends BaseController {
 			$response = View::make('multitenant::chose');
 		else if($tenants < 1)
 			$response = Redirect::route('multitenant.apply');
-		else {
+		else
 			$response = $this->redirectBack();
-		}
 		
 		return $response;
 	}
 	
 	protected function redirectBack() {
-		return Redirect::to('/');
+		$url = Session::get('tenant_from_url', '/');
+		
+		return Redirect::to($url);
 	}
 
 	/**
 	 * Provides a 
 	 */
 	public function getApply() {
+		$response = null;
+		
+		$response = View::make('multitenant::apply');
+		
 		return $response;
 	}
 	

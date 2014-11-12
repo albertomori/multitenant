@@ -1,6 +1,8 @@
 <?php namespace Ipunkt\Multitenant;
 
 use Config;
+use Illuminate\Auth\UserInterface;
+use Illuminate\Support\Facades\Auth;
 use Ipunkt\Multitenant\Tenant\Tenant;
 use Ipunkt\Multitenant\Tenant\TenantRepository;
 use Session;
@@ -11,7 +13,7 @@ use Session;
  */
 class MultitenantObject implements MultitenantInterface {
 	
-	const TENANT_SESSION = 'tenant'
+	const TENANT_SESSION = 'tenant';
 
 	/**
 	 * @var Tenant|null
@@ -22,12 +24,18 @@ class MultitenantObject implements MultitenantInterface {
 	 * @var TenantRepository
 	 */
 	protected $repository;
+	
+	/**
+	 * @var UserInterface
+	 */
+	protected $user;
 
 	/**
 	 * @param TenantRepository $repository
 	 */
 	public function __construct(TenantRepository $repository) {
 	    $this->repository = $repository;
+		$this->user = Auth::user();
 	}
 
 	/**
@@ -43,14 +51,21 @@ class MultitenantObject implements MultitenantInterface {
 	 * @param Tenant $tenant
 	 */
 	public function setTenant(Tenant $tenant) {
-		$this->tenant = $tenant;
-
-		$configKey = $this->getconfigKey() . ".prefix";
-		$prefix = Config::get($configKey);
-		$prefix .= $tenant->getPrefix();
-		Config::set($configKey, $prefix);
+		$success = false;
 		
-		Session::set(MultitenantObject::TENANT_SESSION, $tenant->getId());
+		if($tenant->hasUser($this->user)) {
+			$this->tenant = $tenant;
+	
+			$configKey = $this->getconfigKey() . ".prefix";
+			$prefix = Config::get($configKey);
+			$prefix .= $tenant->getPrefix();
+			Config::set($configKey, $prefix);
+			
+			Session::set(MultitenantObject::TENANT_SESSION, $tenant->getId());
+			$success = true;
+		}
+		
+		return $success;
 	}
 
 	/**
@@ -67,7 +82,9 @@ class MultitenantObject implements MultitenantInterface {
 		$tenantId = Session::get(MultitenantObject::TENANT_SESSION, null);
 		if(null !== $tenantId) {
 			$tenant = $this->repository->byId($tenantId);
-			if($tenant->hasUser($user))
+			
+			if(null !== $tenant)
+				$this->setTenant($tenant);
 		}
 	}
 } 

@@ -2,6 +2,7 @@
 
 use Eloquent;
 use Illuminate\Auth\UserInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Config;
  * 
  * Represents a Tenant object which was loaded from the database through Eloquent
  * @property string $prefix
+ * @property UserInterface[]|Collection $users
  */
 class EloquentTenant extends Eloquent implements Tenant {
 	/**
@@ -37,14 +39,23 @@ class EloquentTenant extends Eloquent implements Tenant {
 	 * @return bool
 	 */
 	public function hasUser(UserInterface $user) {
-		foreach($this->users) {
-			
+		$hasUser = false;
+		foreach($this->users as $myUser) {
+			if($user->getAuthIdentifier() == $myUser->getAuthIdentifier()) {
+				$hasUser = true;
+				break;
+			}
 		}
+		
+		return $hasUser;
 	}
 
 
+	/**
+	 * @return \Illuminate\Database\Eloquent\Relations\HasMany
+	 */
 	public function users() {
 		$userModel = Config::get('auth.model');
-		return $this->hasMany($userModel);
+		return $this->belongsToMany($userModel, 'user_tenants');
 	}
 } 
