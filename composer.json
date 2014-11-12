@@ -1,0 +1,21 @@
+{
+    "name": "ipunkt/multitenant",
+	 "licence": "MIT",
+    "description": "Make your application multi-tenant aware the easy way.",
+    "authors": [
+        {
+            "name": "Sven Speckmaier",
+            "email": "sps@ipunkt.biz"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "4.2.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Ipunkt\\Multitenant": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
